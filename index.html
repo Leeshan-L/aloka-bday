@@ -91,6 +91,8 @@
     background: #fff8; font-size: 1.2rem; display: none;
   }
   .confetti { position: fixed; top: -12px; width: 9px; height: 14px; z-index: 9; pointer-events: none; animation: fall linear forwards; }
+  .heart { position: fixed; z-index: 9; pointer-events: none; font-style: normal; translate: -50% -50%; animation: burst 1.3s cubic-bezier(.1,.8,.3,1) both; }
+  @keyframes burst { 0% { transform: scale(0); opacity: 1 } 70% { opacity: 1 } 100% { transform: translate(var(--x), var(--y)) scale(1.2) rotate(25deg); opacity: 0 } }
   @keyframes fall { to { transform: translate(var(--x), 110vh) rotate(720deg) } }
 
   @media (prefers-reduced-motion: reduce) {
@@ -107,10 +109,10 @@
 <audio id="song" src="song.mp3" loop preload="auto"></audio>
 
 <section id="s1">
-  <div class="stage" style="--ar:702/1129">
-    <img class="a-drop float" style="left:14.81%;top:0.00%;width:61.97%" src="img/1-title.webp" alt="">
-    <img class="a-fade d1" style="left:0.00%;top:48.18%;width:100.00%" src="img/1-sub.webp" alt="">
-    <button class="a-pop d2 wiggle tap go" style="left:32.76%;top:70.42%;width:39.60%" aria-label="open your surprise"><img src="img/1-gift.webp" alt=""></button>
+  <div class="stage" style="--ar:836/1122">
+    <img class="a-drop float" style="left:0.00%;top:0.00%;width:100.00%" src="img/1-title.webp" alt="">
+    <img class="a-fade d1" style="left:25.12%;top:49.82%;width:42.70%" src="img/1-sub.webp" alt="">
+    <button class="a-pop d2 wiggle tap go" style="left:31.94%;top:70.23%;width:33.25%" aria-label="open your surprise"><img src="img/1-gift.webp" alt=""></button>
   </div>
 </section>
 
@@ -126,7 +128,7 @@
 <section id="s3">
   <div class="stage" style="--ar:1177/1479">
     <img class="a-zoom" style="left:0.00%;top:0.00%;width:100.00%" src="img/3-art.webp" alt="">
-    <button class="a-pop d2 pulse tap go" style="left:0.00%;top:65.99%;width:100.00%" aria-label="continue"><img src="img/3-couple.webp" alt=""></button>
+    <button class="a-pop d2 pulse tap go" style="left:0.00%;top:66.53%;width:100.00%" aria-label="continue"><img src="img/3-couple.webp" alt=""></button>
   </div>
 </section>
 
@@ -148,9 +150,9 @@
 </section>
 
 <section id="s6">
-  <div class="stage" style="--ar:1175/1405">
-    <img class="a-drop" style="left:0.00%;top:0.00%;width:84.26%" src="img/6-note.webp" alt="">
-    <button class="a-pop d2 pulse tap go" style="left:87.06%;top:89.18%;width:12.94%" aria-label="next"><img src="img/6-next.webp" alt=""></button>
+  <div class="stage" style="--ar:990/1547">
+    <img class="a-drop" style="left:0.00%;top:0.00%;width:100.00%" src="img/6-note.webp" alt="">
+    <button class="a-pop d2 pulse tap go" style="left:42.32%;top:90.17%;width:15.35%" aria-label="next"><img src="img/6-next.webp" alt=""></button>
   </div>
 </section>
 
@@ -188,7 +190,7 @@
 </section>
 
 <section id="s12">
-  <div class="stage" style="--ar:1267/1153">
+  <div class="stage" style="--ar:802/1108">
     <button class="a-pop pulse tap go" style="left:0.00%;top:0.00%;width:100.00%" aria-label="continue"><img src="img/12-pic.webp" alt=""></button>
   </div>
 </section>
@@ -208,9 +210,16 @@
 </section>
 
 <section id="s15">
+  <div class="stage" style="--ar:1548/1058">
+    <img class="a-zoom float" style="left:0.00%;top:0.00%;width:100.00%" src="img/15-text.webp" alt="">
+    <button class="a-pop d2 pulse tap go" style="left:43.35%;top:81.95%;width:12.98%" aria-label="next"><img src="img/15-next.webp" alt=""></button>
+  </div>
+</section>
+
+<section id="s16">
   <div class="stage" style="--ar:1512/1411">
-    <img class="a-drop" style="left:0.00%;top:0.00%;width:100.00%" src="img/15-title.webp" alt="">
-    <img class="a-zoom d1 beat" style="left:18.65%;top:44.86%;width:61.51%" src="img/15-heart.webp" alt="">
+    <img class="a-drop" style="left:0.00%;top:0.00%;width:100.00%" src="img/16-title.webp" alt="">
+    <img class="a-zoom d1 beat" style="left:18.65%;top:44.86%;width:61.51%" src="img/16-heart.webp" alt="">
   </div>
   <button class="replay">↺ replay</button>
 </section>
@@ -219,7 +228,7 @@
   const $ = s => document.querySelector(s);
   const song = $('#song'), mute = $('.mute');
   const no = $('.no'), noHome = no.getAttribute('style');
-  let cur = 0, tries = 0;
+  let cur = 0, tries = 0, opening = false;
 
   // 3 → 5 skips the 404 page; 404 "hmm" → 3; everything else → next
   const nextOf = n => ({ 3: 5, 4: 3 })[n] || n + 1;
@@ -229,7 +238,7 @@
     $('#s' + n).classList.add('on');
     cur = n;
     if (n === 2) { tries = 0; no.setAttribute('style', noHome); }
-    if (n === 15) confetti();
+    if (n === 16) confetti();
     if (push) history.pushState({ n }, '');
   }
   // phone back button = previous slide
@@ -242,7 +251,13 @@
     const btn = e.target.closest('.go');
     // slides 3 and 8–13: tapping anywhere also works, in case she misses the word
     if (btn || (cur === 3 || (cur >= 8 && cur <= 13))) {
-      if (cur === 1) { song.play().then(() => mute.style.display = 'block').catch(() => {}); confetti(); }
+      if (cur === 1) {
+        if (opening) return;
+        opening = true;
+        song.play().then(() => mute.style.display = 'block').catch(() => {});
+        burst(btn.getBoundingClientRect()); confetti();
+        return setTimeout(() => { opening = false; show(2); }, 1400);
+      }
       show(nextOf(cur));
     }
   });
@@ -262,6 +277,26 @@
     song.muted = !song.muted;
     mute.textContent = song.muted ? '🔇' : '🔊';
   });
+
+  // hearts + sparkles fly out of the gift
+  function burst(r) {
+    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    const bits = ['💖', '❤️', '💕', '💗', '✨', '🎆', '💘'];
+    for (let i = 0; i < 40; i++) {
+      const h = document.createElement('i');
+      const a = Math.random() * Math.PI * 2, d = 120 + Math.random() * 220;
+      h.className = 'heart';
+      h.textContent = bits[i % bits.length];
+      h.style.left = cx + 'px';
+      h.style.top = cy + 'px';
+      h.style.fontSize = 16 + Math.random() * 22 + 'px';
+      h.style.setProperty('--x', Math.cos(a) * d + 'px');
+      h.style.setProperty('--y', Math.sin(a) * d + 'px');
+      h.style.animationDelay = Math.random() * .25 + 's';
+      document.body.append(h);
+      h.addEventListener('animationend', () => h.remove());
+    }
+  }
 
   function confetti() {
     const colors = ['#FF4FA3', '#FFE066', '#5CE1E6', '#E57373', '#C77DFF', '#FF8A65'];
